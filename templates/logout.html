@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title></title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}"/>
+    <!-- site css -->
+    <link rel="stylesheet" href="{% static 'style.css' %}"/>
+    <!-- responsive css -->
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}"/>
+    <!-- color css -->
+    <link rel="stylesheet" href="{% static 'css/color_2.css' %}"/>
+    <!-- select bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}"/>
+    <!-- scrollbar css -->
+    <link rel="stylesheet" href="{% static 'css/perfect-scrollbar.css' %}"/>
+    <!-- custom css -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+    <!-- calendar file css -->
+    <link rel="stylesheet" href="{% static 'js/semantic.min.js' %}"/>
+</head>
+<body class="inner_page login">
+<div class="full_container">
+    <div class="container">
+        <div class="center verticle_center full_height">
+            <div class="login_section">
+                <div class="logo_login">
+                    <div class="center">
+                        <h1 style="color: white" ><b>崝赛网络安全竞赛系统 用户注销成功</b></h1>
+                    </div>
+                </div>
+                <div class="login_form">
+                   <h1 style="color: #5a6268"><a href="/login/?next=/">重新登陆</a></h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- jQuery -->
+<script src="{% static 'js/jquery.min.js'%}"></script>
+<script src="{% static 'js/popper.min.js'%}"></script>
+<script src="{% static 'js/bootstrap.min.js'%}"></script>
+<!-- wow animation -->
+<script src="{% static 'js/animate.js'%}"></script>
+<!-- select country -->
+<script src="{% static 'js/bootstrap-select.js'%}"></script>
+<!-- nice scrollbar -->
+<script src="{% static 'js/perfect-scrollbar.min.js'%}"></script>
+<script>
+    var ps = new PerfectScrollbar('#sidebar');
+</script>
+<!-- custom js -->
+<script src="{% static 'js/custom.js'%}"></script>
+</body>
+</html>
