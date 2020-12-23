@@ -1,6 +1,13 @@
 # ZhengMatch
 # 崝赛——网络安全赛事比赛平台    Ctf、AWD、简答、选择    赛事管理、选手管理、题目创建、赛事编排
 
+## 界面预览  
+![登陆界面](https://i.jpg.dog/img/12dcb77803d8f5b9c06f992f128468b4.png)  
+![赛事列表](https://i.jpg.dog/img/aeb937886675e1ada519961684e5147a.png)  
+![后台预览1](https://i.jpg.dog/img/56f217176e29e53d2a3fd2772a8dfd7a.png)  
+![后台预览2](https://i.jpg.dog/img/956e1f970fc7cc9b9e06b63d12d575f9.png)  
+
+
 ## 开发进度  
   
 后台实现了差不多1/2了，前台不到1/3，额  
