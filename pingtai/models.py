@@ -39,6 +39,7 @@ class CtfQuestions(models.Model):
     question_type_choose = (('Choose', 'Choose'), ('SAQ', 'SAQ'), ('CTF', 'CTF'), ('AWD', 'AWD'))
     question_type = models.CharField(max_length=6, choices=question_type_choose)
     question_ctf_category_choose = [('', '------')]
+    # 执行迁移时注释
     get_CtfCategory = CtfCategory.objects.all()
     for CtfCategory_item in get_CtfCategory:
         question_ctf_category_choose = question_ctf_category_choose + [
@@ -77,7 +78,6 @@ class Notice(models.Model):
     for MatchInfo_item in get_MatchInfo:
         match_id_choose = match_id_choose + [
             (MatchInfo_item.match_id, MatchInfo_item.match_name)]
-    # print(match_id_choose)
     notice_id = models.AutoField(primary_key=True)
     match_id = models.IntegerField(choices=match_id_choose, blank=True)
     notice_content = models.TextField()
@@ -106,14 +106,14 @@ class WriteUp(models.Model):
 
 class Achievement(models.Model):
     id = models.AutoField(primary_key=True)
-    match_id = models.IntegerField(verbose_name='比赛ID')
-    user_id = models.CharField(max_length=255, default='', verbose_name='用户ID')
-    had_answer_question_id = models.TextField(verbose_name='已解题目')
-    achievement = models.IntegerField(verbose_name='当前成绩')
+    match_id = models.IntegerField()
+    user_id = models.IntegerField()
+    answered_question_id = models.TextField()
+    achievement = models.IntegerField()
 
     def __str__(self):
-        return str(self.id) + str(self.match_id) + self.user_id
+        return str(self.id) + str(self.match_id) + str(self.user_id)
 
     class Meta:
-        verbose_name = "成绩及答题状态管理"
-        verbose_name_plural = "成绩及答题状态管理"
+        verbose_name = "成绩及答题"
+        verbose_name_plural = "成绩及答题"

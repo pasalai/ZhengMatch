@@ -118,14 +118,14 @@ admin.site.register(Notice, NoticeAdmin)
 
 
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ('match_id', 'user_id', 'had_answer_question_id', 'achievement')
+    list_display = ('match_id', 'user_id', 'answered_question_id', 'achievement')
     list_editable = ()
     readonly_fields = ('id',)
     search_fields = ('match_id', 'user_id')
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('match_id', 'user_id', 'had_answer_question_id', 'achievement')}),
+        ('类别', {'fields': ('match_id', 'user_id', 'answered_question_id', 'achievement')}),
     )
 
 
