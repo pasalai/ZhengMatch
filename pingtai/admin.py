@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo
+from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo, Achievement
 
 admin.site.site_title = '崝赛'
 admin.site.site_header = '崝赛后台管理系统'
@@ -85,7 +85,21 @@ class ChooseQuestionsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ChooseQuestions, ChooseQuestionsAdmin)
-admin.site.register(WriteUp)
+
+
+class WriteUpAdmin(admin.ModelAdmin):
+    list_display = ('user_id', 'match_id', 'file_path')
+    list_editable = ()
+    readonly_fields = ()
+    search_fields = ('match_id',)
+    empty_value_display = 'N/A'
+    list_filter = ()
+    fieldsets = (
+        ('类别', {'fields': ('user_id', 'match_id', 'file_path')}),
+    )
+
+
+admin.site.register(WriteUp, WriteUpAdmin)
 
 
 class NoticeAdmin(admin.ModelAdmin):
@@ -101,3 +115,18 @@ class NoticeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Notice, NoticeAdmin)
+
+
+class AchievementAdmin(admin.ModelAdmin):
+    list_display = ('match_id', 'user_id', 'had_answer_question_id', 'achievement')
+    list_editable = ()
+    readonly_fields = ('id',)
+    search_fields = ('match_id', 'user_id')
+    empty_value_display = 'N/A'
+    list_filter = ()
+    fieldsets = (
+        ('类别', {'fields': ('match_id', 'user_id', 'had_answer_question_id', 'achievement')}),
+    )
+
+
+admin.site.register(Achievement, AchievementAdmin)

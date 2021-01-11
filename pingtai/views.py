@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from pingtai.models import CtfCategory, CtfQuestions, MatchInfo
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from datetime import datetime
 
 
 # Create your views here.
@@ -27,6 +28,57 @@ def getIndexPage(request):
         match_infos = paginator.page(paginator.num_pages)
     return render(request, "index.html", {'match_infos': match_infos, 'user': user})
 
+
+@login_required
+def getMatchPage(request):
+    matchID = request.GET.get('id')
+    user = request.user.username
+    match_user = MatchInfo.objects.all().filter(match_id=matchID)[0].match_user.split('/')
+    match_start_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_start_time.replace(tzinfo=None)
+    match_stop_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_stop_time.replace(tzinfo=None)
+    cur_time = datetime.now()
+    if match_start_time <= cur_time:
+        if match_stop_time > cur_time:
+            if str(user) in match_user:
+                match_infos = MatchInfo.objects.all().filter(match_id__exact=matchID)[0]
+                match_questions = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_questions.split('/')
+                questions_id = []
+                questions_title = []
+                questions_content = []
+                question_tips = []
+                question_fraction = []
+                question_ctf_category = []
+                for i in match_questions:
+                    questions_ti = CtfQuestions.objects.all().filter(question_id__exact=i)[0]
+                    questions_id.append(questions_ti.question_id)
+                    questions_title.append(questions_ti.question_title)
+                    questions_content.append(questions_ti.question_content)
+                    question_tips.append(questions_ti.question_tips)
+                    question_fraction.append(questions_ti.question_fraction)
+                    question_ctf_category.append(questions_ti.question_ctf_category)
+                match_questions_info = zip(questions_id, questions_title, questions_content, question_tips, question_fraction,
+                                           question_ctf_category)
+                return render(request, "match.html",
+                              {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user})
+            else:
+                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛')</script>", content_type="text/html", status='403')
+        else:
+            return HttpResponse(content='<script>alert("比赛已经结束")</script>', status='403')
+    else:
+        return HttpResponse(content='<script>alert("比赛尚未开始")</script>', status='403')
+
+
+@login_required
+def pushFlag(request):
+    question_id = request.POST.get('question_id')
+    flag = request.POST.get('flag')
+    print(question_id, flag)
+    question_answer = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0]
+    print(question_answer)
+    if flag == question_answer.question_answer:
+        return HttpResponse(content='<script>alert("答案正确")</script>')
+    else:
+        return HttpResponse(content="<script>alert('flag错误')</script>")
 
 # 创建CTF题目类型的函数
 # 向 /addctfcategory/ POST 传值 CtfCategoryName

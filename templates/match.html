@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ match_infos.match_name }}</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+{#导航栏#}
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">崝赛</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                {#                <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>#}
+                <li><a href="#">主页</a></li>
+                <li><a href="#">通知公告</a></li>
+                <li><a href="#">战队大数据</a></li>
+                <li><a href="#">大屏展示</a></li>
+            </ul>
+            <form class="navbar-form navbar-left" action="/search/">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">搜索</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                <li><a href="/user/{{ user.id }}">{{ user.username }}，您好！</a></li>
+                {% else %}
+                <li><a href="/login/">登陆</a></li>
+                {% endif %}
+                <li><a href="/logout/">注销</a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+{#比赛列表#}
+<div class="container">
+    {#主体#}
+    {% for questions_id, questions_title, questions_content, question_tips, question_fraction, question_ctf_category in match_questions_info %}
+        <div class="jumbotron">
+            <h1>{{ questions_title }} <small>分类：{{ question_ctf_category }}&nbsp;&nbsp;&nbsp;&nbsp;分值：{{ question_fraction }}</small></h1>
+            <p>{{ questions_content|safe }}</p>
+            <p>{{ question_tips|safe }}</p>
+            <form action="/push/" method="post">
+                <input hidden name="question_id" value="{{ questions_id }}">
+                <input class="input" name="flag">
+                <button type="submit">提交Flag</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    {#<a href="">注销</a>#}
+    {#<a href="/create/">注册</a>#}
+</div>
+<div class="container">
+    <nav aria-label="...">
+        <ul class="pager">
+            {% if match_infos.has_previous %}
+                <li><a href="?page={{ match_infos.previous_page_number }}">上一页</a></li>
+            {% endif %}
+            第 {{ match_infos.number }} / {{ match_infos.paginator.num_pages }}页
+            {% if match_infos.has_next %}
+                <li><a href="?page={{ match_infos.next_page_number }}">下一页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

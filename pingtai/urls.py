@@ -19,5 +19,7 @@ import pingtai.views
 urlpatterns = [
     path('', pingtai.views.getIndexPage),
     path('hello', pingtai.views.HelloWorld),
+    path('match/', pingtai.views.getMatchPage),
+    path('push/', pingtai.views.pushFlag),
     # path('addctfcategory/', pingtai.views.addCtfCategory),
 ]
