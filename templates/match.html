@@ -59,6 +59,7 @@
             <p>{{ question_tips|safe }}</p>
             <form action="/push/" method="post">
                 <input hidden name="question_id" value="{{ questions_id }}">
+                <input hidden name="match_id" value="{{ match_infos.match_id }}">
                 <input class="input" name="flag">
                 <button type="submit">提交Flag</button>
             </form>

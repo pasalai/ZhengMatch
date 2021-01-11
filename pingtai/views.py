@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
-from pingtai.models import CtfCategory, CtfQuestions, MatchInfo
+from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 
@@ -71,11 +71,30 @@ def getMatchPage(request):
 @login_required
 def pushFlag(request):
     question_id = request.POST.get('question_id')
+    match_id = request.POST.get('match_id')
     flag = request.POST.get('flag')
-    print(question_id, flag)
+    # print(question_id, flag)
     question_answer = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0]
-    print(question_answer)
+    # print(question_answer)
     if flag == question_answer.question_answer:
+        # 尝试读取选手在本次比赛的解题成绩
+        try:
+            count = Achievement.objects.all().filter(user_id__exact=request.user.id).filter(match_id=match_id)[0]
+            answered_questions = count.answered_question_id.split('/')
+            if question_id in answered_questions:
+                return HttpResponse('<script>alert("这个题已经做过了")</script>')
+            count.answered_question_id = count.answered_question_id+'/'+question_id
+            fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
+            count.achievement = count.achievement + int(fenshu)
+            count.save()
+        except:
+            count = Achievement()
+            count.match_id = match_id
+            count.user_id = request.user.id
+            count.answered_question_id = question_id
+            fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
+            count.achievement = int(fenshu)
+            count.save()
         return HttpResponse(content='<script>alert("答案正确")</script>')
     else:
         return HttpResponse(content="<script>alert('flag错误')</script>")
