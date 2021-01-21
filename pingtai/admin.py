@@ -55,7 +55,7 @@ admin.site.register(CtfCategory, CtfCategoryAdmin)
 class CtfQuestionsAdmin(admin.ModelAdmin):
     list_display = (
         'question_title', 'question_content', 'question_tips', 'question_answer', 'question_fraction', 'question_type',
-        'question_ctf_category', 'docker_path')
+        'question_ctf_category', 'if_docker', 'docker_type', 'docker_file', 'docker_Hub')
     list_editable = ()
     readonly_fields = ('question_id',)
     search_fields = ('question_title',)
@@ -65,7 +65,7 @@ class CtfQuestionsAdmin(admin.ModelAdmin):
         ('类别', {'fields': (
             'question_title', 'question_content', 'question_tips', 'question_answer', 'question_fraction',
             'question_type',
-            'question_ctf_category', 'docker_path')}),
+            'question_ctf_category',  'if_docker', 'docker_type', 'docker_file', 'docker_Hub')}),
     )
 
 
@@ -88,14 +88,14 @@ admin.site.register(ChooseQuestions, ChooseQuestionsAdmin)
 
 
 class WriteUpAdmin(admin.ModelAdmin):
-    list_display = ('user_id', 'match_id', 'file_path')
+    list_display = ('user_id', 'match_id', 'writeup_file')
     list_editable = ()
     readonly_fields = ()
     search_fields = ('match_id',)
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('user_id', 'match_id', 'file_path')}),
+        ('类别', {'fields': ('user_id', 'match_id', 'writeup_file')}),
     )
 
 

@@ -41,6 +41,7 @@
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
                 <li><a href="/user/{{ user.id }}">{{ user.username }}，您好！</a></li>
+                <li><a href="/password_change/">修改密码</a></li>
                 {% else %}
                 <li><a href="/login/">登陆</a></li>
                 {% endif %}

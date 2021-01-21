@@ -39,13 +39,18 @@ class CtfQuestions(models.Model):
     question_type_choose = (('Choose', 'Choose'), ('SAQ', 'SAQ'), ('CTF', 'CTF'), ('AWD', 'AWD'))
     question_type = models.CharField(max_length=6, choices=question_type_choose)
     question_ctf_category_choose = [('', '------')]
-    # 执行迁移时注释
+    # 初次执行迁移时注释
     get_CtfCategory = CtfCategory.objects.all()
     for CtfCategory_item in get_CtfCategory:
         question_ctf_category_choose = question_ctf_category_choose + [
             (CtfCategory_item.category_name, CtfCategory_item.category_name)]
     question_ctf_category = models.CharField(max_length=20, choices=question_ctf_category_choose)
-    docker_path = models.CharField(max_length=200, blank=True)
+    if_docker_choose = (('1', '是'), ('0', '否'))
+    if_docker = models.CharField(max_length=1, choices=if_docker_choose, blank=True)
+    docker_type_choose = (('WebFile', 'WebFile'), ('FromDockerHub', 'FromDockerHub'))
+    docker_type = models.TextField(choices=docker_type_choose, blank=True)
+    docker_file = models.FileField(upload_to='./upload/upload_docker_file', max_length=100, blank=True)
+    docker_Hub = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.question_title
@@ -94,7 +99,7 @@ class Notice(models.Model):
 class WriteUp(models.Model):
     user_id = models.CharField(max_length=255, default='')
     match_id = models.IntegerField()
-    file_path = models.CharField(max_length=255, default='')
+    writeup_file = models.FileField(upload_to='./upload/upload_WriteUp_file', max_length=255, default='')
 
     def __str__(self):
         return self.user_id + str(self.match_id) + str(self.match_id)

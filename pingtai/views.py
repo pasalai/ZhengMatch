@@ -4,6 +4,9 @@ from django.shortcuts import render
 from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
+import docker
+import tarfile
+import os
 
 
 # Create your views here.
@@ -56,12 +59,14 @@ def getMatchPage(request):
                     question_tips.append(questions_ti.question_tips)
                     question_fraction.append(questions_ti.question_fraction)
                     question_ctf_category.append(questions_ti.question_ctf_category)
-                match_questions_info = zip(questions_id, questions_title, questions_content, question_tips, question_fraction,
+                match_questions_info = zip(questions_id, questions_title, questions_content, question_tips,
+                                           question_fraction,
                                            question_ctf_category)
                 return render(request, "match.html",
                               {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user})
             else:
-                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛')</script>", content_type="text/html", status='403')
+                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛')</script>", content_type="text/html",
+                                    status='403')
         else:
             return HttpResponse(content='<script>alert("比赛已经结束")</script>', status='403')
     else:
@@ -83,7 +88,7 @@ def pushFlag(request):
             answered_questions = count.answered_question_id.split('/')
             if question_id in answered_questions:
                 return HttpResponse('<script>alert("这个题已经做过了")</script>')
-            count.answered_question_id = count.answered_question_id+'/'+question_id
+            count.answered_question_id = count.answered_question_id + '/' + question_id
             fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
             count.achievement = count.achievement + int(fenshu)
             count.save()
@@ -99,6 +104,33 @@ def pushFlag(request):
     else:
         return HttpResponse(content="<script>alert('flag错误')</script>")
 
+
+class CreateDocker:
+    def __init__(self):
+        # docker_id = request.POST.get('docker_id')
+        self.client = docker.from_env()
+        # client.containers.run("ubuntu", 'echo "hello World!')
+        # pass
+
+    def rm_docker(self):
+        pass
+
+    def create_docker(self):
+        pass
+    # 复制题目文件到容器中
+    # copy_to('/local/foo.txt','my-container:/tmp/foo.txt')
+    def copy_to(self, src, dst):
+        name, dst = dst.split(':')
+        container = self.client.containers.get(name)
+        os.chdir(os.path.dirname(src))
+        srcname = os.path.basename(src)
+        tar = tarfile.open(src + '.tar', mode='w')
+        try:
+            tar.add(srcname)
+        finally:
+            tar.close()
+        data = open(src + '.tar', 'rb').read()
+        container.put_archive(os.path.dirname(dst), data)
 # 创建CTF题目类型的函数
 # 向 /addctfcategory/ POST 传值 CtfCategoryName
 # def addCtfCategory(request):

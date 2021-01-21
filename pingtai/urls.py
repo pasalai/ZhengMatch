@@ -15,11 +15,17 @@ Including another URLconf
 """
 from django.urls import path
 import pingtai.views
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
 urlpatterns = [
     path('', pingtai.views.getIndexPage),
     path('hello', pingtai.views.HelloWorld),
     path('match/', pingtai.views.getMatchPage),
     path('push/', pingtai.views.pushFlag),
+    # 修改密码
+    path('password_change/', PasswordChangeView.as_view(), name='password_change'),
+    path('password_change_done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
+
     # path('addctfcategory/', pingtai.views.addCtfCategory),
 ]
