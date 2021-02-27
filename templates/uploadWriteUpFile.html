@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>上传WriteUP文件</title>
+</head>
+<body>
+<h1>上传WriteUP文件</h1>
+<form method="post">
+    {% csrf_token %}
+    <fieldset>
+        <div class="field">
+            <label class="label_field">选择上传的WriteUP文件（每场比赛仅可上传一次，请仔细确认无误后上传）：</label>
+            <br/>
+            <input type="file" name="file" placeholder="请选择docx/doc/pdf格式的文件"/>
+        </div>
+        <input hidden="hidden" disabled="disabled" name="matchID" value="{{ matchID }}">
+        <div class="field margin_0">
+            <button class="main_bt" formaction="/uploadwp/">提交</button>
+        </div>
+    </fieldset>
+</form>
+</body>
+</html>

@@ -62,10 +62,11 @@ class CtfQuestionsAdmin(admin.ModelAdmin):
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': (
+        ('题目信息', {'fields': (
             'question_title', 'question_content', 'question_tips', 'question_answer', 'question_fraction',
-            'question_type',
-            'question_ctf_category',  'if_docker', 'docker_type', 'docker_file', 'docker_Hub')}),
+            'question_type', 'question_ctf_category',)}),
+        ('Docker 信息', {'fields': ('if_docker', 'docker_type', 'docker_file', 'docker_Hub',)}),
+        ('反作弊', {'fields': ('if_AntiCheating',)}),
     )
 
 
@@ -80,7 +81,7 @@ class ChooseQuestionsAdmin(admin.ModelAdmin):
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('question_content', 'question_options', 'question_answer')}),
+        ('题目信息', {'fields': ('question_content', 'question_options', 'question_answer')}),
     )
 
 
@@ -95,7 +96,7 @@ class WriteUpAdmin(admin.ModelAdmin):
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('user_id', 'match_id', 'writeup_file')}),
+        ('解题明细管理', {'fields': ('user_id', 'match_id', 'writeup_file')}),
     )
 
 
@@ -110,7 +111,7 @@ class NoticeAdmin(admin.ModelAdmin):
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('match_id', 'notice_content',)}),
+        ('编辑公告', {'fields': ('match_id', 'notice_content',)}),
     )
 
 
@@ -125,7 +126,7 @@ class AchievementAdmin(admin.ModelAdmin):
     empty_value_display = 'N/A'
     list_filter = ()
     fieldsets = (
-        ('类别', {'fields': ('match_id', 'user_id', 'answered_question_id', 'achievement')}),
+        ('成绩管理', {'fields': ('match_id', 'user_id', 'answered_question_id', 'achievement')}),
     )
 
 

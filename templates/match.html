@@ -41,6 +41,8 @@
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
                 <li><a href="/user/{{ user.id }}">{{ user.username }}，您好！</a></li>
+                <li><a href="#">当前成绩：{{ chengji }}</a></li>
+                <li><a href="/getuploadWriteUpFilePage?matchID={{ match_infos.match_id }}">提交WriteUP文件</a></li>
                 <li><a href="/password_change/">修改密码</a></li>
                 {% else %}
                 <li><a href="/login/">登陆</a></li>
@@ -66,22 +68,20 @@
             </form>
         </div>
     {% endfor %}
-
-    {#<a href="">注销</a>#}
-    {#<a href="/create/">注册</a>#}
 </div>
-<div class="container">
-    <nav aria-label="...">
-        <ul class="pager">
-            {% if match_infos.has_previous %}
-                <li><a href="?page={{ match_infos.previous_page_number }}">上一页</a></li>
-            {% endif %}
-            第 {{ match_infos.number }} / {{ match_infos.paginator.num_pages }}页
-            {% if match_infos.has_next %}
-                <li><a href="?page={{ match_infos.next_page_number }}">下一页</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-</div>
+{# 翻页 #}
+{#<div class="container">#}
+{#    <nav aria-label="...">#}
+{#        <ul class="pager">#}
+{#            {% if match_infos.has_previous %}#}
+{#                <li><a href="?page={{ match_infos.previous_page_number }}">上一页</a></li>#}
+{#            {% endif %}#}
+{#            第 {{ match_infos.number }} / {{ match_infos.paginator.num_pages }}页#}
+{#            {% if match_infos.has_next %}#}
+{#                <li><a href="?page={{ match_infos.next_page_number }}">下一页</a></li>#}
+{#            {% endif %}#}
+{#        </ul>#}
+{#    </nav>#}
+{#</div>#}
 </body>
 </html>

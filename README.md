@@ -1,6 +1,7 @@
 # ZhengMatch
 # 崝赛——网络安全赛事比赛平台    Ctf、AWD、简答、选择    赛事管理、选手管理、题目创建、赛事编排
 
+[README_English](https://github.com/lsc183754539/ZhengMatch/README_English.md)
 ## 界面预览  
 ![登陆界面](https://i.jpg.dog/img/12dcb77803d8f5b9c06f992f128468b4.png)  
 ![赛事列表](https://i.jpg.dog/img/aeb937886675e1ada519961684e5147a.png)  
@@ -9,49 +10,29 @@
 
 
 ## 开发进度  
-  
-后台实现了差不多1/2了，前台不到1/3，额  
-
-
-## 数据库设计（这个不对，但是我懒得改了）  
 ```
-DateBase:ZhengMatch  
-Tables:[ctf_category,choose_questions,ctf_questions,match_info,writeup_file,notice]
-ctf_category:
-    category_id
-    category_name
-choose_questions:
-    question_id
-    question_content
-    question_options
-    question_answer
-ctf_questions:
-    question_id
-    question_title
-    question_content
-    question_tips
-    question_answer
-    question_fraction
-    question_type
-    question_ctf_category
-    question_docker
-match_info:
-    match_id
-    match_name
-    match_start_time
-    match_stop_time
-    match_user
-    match_questions
-writeup:
-    user_id
-    match_id
-    file_path
-notice:
-    notice_id
-    match_id
-    notice_content
-    notice_time
+Null 
 ```
 
+
+## 数据库设计 _ 有时间再写，看得懂的自己去看`models.py`
+```
+NULL
+```
+
+## 安装部署
+```
+# 下载项目文件
+git clone https://github.com/lsc183754539/ZhengMatch
+# 安装依赖模块
+cd ZhengMatch
+pip3 install -r requirements.txt  
+# 修改ZhengMatch/setting.py 中的数据库连接信息
+# 部署数据库（先将models.py中跨模块引用的部分注释掉执行一次成功后解除注释重新执行成功即部署完成）
+python3 manage.py makemigrations
+python3 manage.py migrate
+# 运行项目
+python3 manage.py runserver 0.0.0.0 80 # 端口信息自行设置  
+```  
 
 > 请遵循Apache-2.0 License

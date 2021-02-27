@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
-from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement
+from django.conf import settings
+from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement, Notice, WriteUp
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 import docker
@@ -19,7 +20,7 @@ def HelloWorld(request):
 @login_required
 def getIndexPage(request):
     user = request.user
-    select_match_infos = MatchInfo.objects.all()
+    select_match_infos = MatchInfo.objects.all().order_by('match_start_time')
     paginator = Paginator(select_match_infos, 5)
     page = request.GET.get('page')
     try:
@@ -35,7 +36,11 @@ def getIndexPage(request):
 @login_required
 def getMatchPage(request):
     matchID = request.GET.get('id')
-    user = request.user.username
+    user = request.user
+    try:
+        chengji = Achievement.objects.all().filter(user_id=user.id).filter(match_id=matchID)[0].achievement
+    except:
+        chengji = 0
     match_user = MatchInfo.objects.all().filter(match_id=matchID)[0].match_user.split('/')
     match_start_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_start_time.replace(tzinfo=None)
     match_stop_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_stop_time.replace(tzinfo=None)
@@ -63,7 +68,8 @@ def getMatchPage(request):
                                            question_fraction,
                                            question_ctf_category)
                 return render(request, "match.html",
-                              {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user})
+                              {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user,
+                               'chengji': chengji})
             else:
                 return HttpResponse(content="<script>alert('当前用户尚未报名本比赛')</script>", content_type="text/html",
                                     status='403')
@@ -105,6 +111,7 @@ def pushFlag(request):
         return HttpResponse(content="<script>alert('flag错误')</script>")
 
 
+@login_required
 class CreateDocker:
     def __init__(self):
         # docker_id = request.POST.get('docker_id')
@@ -117,6 +124,7 @@ class CreateDocker:
 
     def create_docker(self):
         pass
+
     # 复制题目文件到容器中
     # copy_to('/local/foo.txt','my-container:/tmp/foo.txt')
     def copy_to(self, src, dst):
@@ -131,6 +139,51 @@ class CreateDocker:
             tar.close()
         data = open(src + '.tar', 'rb').read()
         container.put_archive(os.path.dirname(dst), data)
+
+
+@login_required
+def getNotic(request):
+    matchID = request.GET.get('matchID')
+    select_notice = Notice.objects.all().filter(match_id__exact=matchID).order_by("notice_time")
+    paginator = Paginator(select_notice, 5)
+    page = request.GET.get('page')
+    try:
+        notice = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        notice = paginator.page(1)
+    except EmptyPage:
+        notice = paginator.page(paginator.num_pages)
+    user = request.user
+    return render(request, 'notice.html', {'notice': notice, 'user': user})
+
+
+@login_required
+def getuploadWriteUpFilePage(request):
+    matchID = request.GET.get('matchID')
+    user = request.user
+    return render(request, 'uploadWriteUpFile.html', {'matchID': matchID, 'user': user},)
+
+@login_required
+def uploadWritefile(request):
+    print("_"* 30)
+    user = request.user
+    matchID = request.POST.get('matchID')
+    file_name = request.POST.get('file')
+    print(file_name)
+    file_content = request.FILES.get('file')
+    print(file_content)
+    writeup = WriteUp()
+    writeup.match_id = matchID
+    writeup.user_id = user.id
+    writeup.writeup_file = file_content
+    print(writeup)
+    # writeup.save()
+    return HttpResponse('<script>alert("WriteUp上传成功")</script>')
+
+
+
+
 # 创建CTF题目类型的函数
 # 向 /addctfcategory/ POST 传值 CtfCategoryName
 # def addCtfCategory(request):

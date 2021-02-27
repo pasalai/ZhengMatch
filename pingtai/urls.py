@@ -19,10 +19,15 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
 urlpatterns = [
-    path('', pingtai.views.getIndexPage),
-    path('hello', pingtai.views.HelloWorld),
-    path('match/', pingtai.views.getMatchPage),
-    path('push/', pingtai.views.pushFlag),
+    path('', pingtai.views.getIndexPage),   # 比赛主页
+    path('hello', pingtai.views.HelloWorld),    # 环境测试函数
+    path('match/', pingtai.views.getMatchPage),  # 比赛详情
+    path('push/', pingtai.views.pushFlag),  # 提交flag
+    path('notice/', pingtai.views.getNotic),  # 公告模块
+    path('creatDocker/', pingtai.views.CreateDocker),   # 创建Docker环境 未完成
+    path('getuploadWriteUpFilePage/', pingtai.views.getuploadWriteUpFilePage),   # 提交WriteUp页面
+    path('uploadwp/', pingtai.views.uploadWritefile),    # 接受上传的WP
+
     # 修改密码
     path('password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('password_change_done/', PasswordChangeDoneView.as_view(), name='password_change_done'),

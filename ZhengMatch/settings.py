@@ -27,7 +27,7 @@ SECRET_KEY = 'a-06dqi&pypt$cnx(40z_7vwpv4_pky#%7nqqyr)v1*f(im0*o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -133,3 +133,5 @@ STATICFILES_DIRS = [
 SIMPLEUI_DEFAULT_ICON = False
 
 SIMPLEUI_HOME_INFO = False
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
