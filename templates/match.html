@@ -26,11 +26,9 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                {#                <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>#}
-                <li><a href="#">主页</a></li>
-                <li><a href="#">通知公告</a></li>
-                <li><a href="#">战队大数据</a></li>
-                <li><a href="#">大屏展示</a></li>
+                <li><a href="/">主页</a></li>
+                <li><a href="/notice?matchID={{ match_infos.match_id }}">通知公告</a></li>
+                <li><a href="/anticheating/">烽火台</a></li>
             </ul>
             <form class="navbar-form navbar-left" action="/search/">
                 <div class="form-group">

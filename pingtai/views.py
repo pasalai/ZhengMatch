@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
-from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement, Notice, WriteUp
+from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement, Notice, WriteUp, Uphistory
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 import docker
@@ -84,6 +84,29 @@ def pushFlag(request):
     question_id = request.POST.get('question_id')
     match_id = request.POST.get('match_id')
     flag = request.POST.get('flag')
+    # 写提交记录用于反作弊
+    up_flag = Uphistory()
+    up_flag.user_id = request.user.id
+    up_flag.user_name = request.user.username
+    up_flag.match_id = match_id
+    up_flag.match_title = MatchInfo.objects.all().filter(match_id__exact=match_id)[0].match_name
+    up_flag.upload_flag = flag
+    # 判断本题是否启用了反作弊
+    if_anticheating = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].if_AntiCheating
+    # 判断是否作弊
+    if if_anticheating == "1":
+        had_flag = Uphistory.objects.all().filter(match_id__exact=match_id)
+        for i in range(0, len(had_flag)):
+            old_flag = had_flag[i].upload_flag
+            if request.user.id != had_flag[i].user_id:  # 排除自己重复提交的flag
+                if flag == old_flag:
+                    up_flag.if_cheating = "1"
+                    break
+                else:
+                    up_flag.if_cheating = "0"
+    else:
+        up_flag.if_cheating = "0"
+    up_flag.save()
     # print(question_id, flag)
     question_answer = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0]
     # print(question_answer)
@@ -114,16 +137,18 @@ def pushFlag(request):
 @login_required
 class CreateDocker:
     def __init__(self):
-        # docker_id = request.POST.get('docker_id')
-        self.client = docker.from_env()
-        # client.containers.run("ubuntu", 'echo "hello World!')
-        # pass
-
-    def rm_docker(self):
-        pass
+        self.port_list = []
 
     def create_docker(self):
-        pass
+        self.client = docker.from_env()
+        container = self.client.containers.run('ubuntu', 'echo "HelloWorld!"', detach=True)
+        print(container.logs())
+        return container
+
+    def rm_docker(self, docker_name):
+        import os
+        os.popen("docker rm -f " + str(docker_name))
+        return 'OK'
 
     # 复制题目文件到容器中
     # copy_to('/local/foo.txt','my-container:/tmp/foo.txt')
@@ -162,7 +187,8 @@ def getNotic(request):
 def getuploadWriteUpFilePage(request):
     matchID = request.GET.get('matchID')
     user = request.user
-    return render(request, 'uploadWriteUpFile.html', {'matchID': matchID, 'user': user},)
+    return render(request, 'uploadWriteUpFile.html', {'matchID': matchID, 'user': user}, )
+
 
 @login_required
 def uploadWritefile(request):
@@ -179,34 +205,9 @@ def uploadWritefile(request):
     return HttpResponse('<script>alert("WriteUp上传成功")</script>')
 
 
+# 反作弊烽火台
+@login_required
+def getAntiCheatingPage(request):
+    chaeting_history = Uphistory.objects.all().filter(if_cheating__exact="1")
 
-
-# 创建CTF题目类型的函数
-# 向 /addctfcategory/ POST 传值 CtfCategoryName
-# def addCtfCategory(request):
-#     newCtfCategory = CtfCategory()
-#     newCtfCategory.category_name = request.POST.get('CtfCategoryName')
-#     try:
-#         newCtfCategory.save()
-#         return HttpResponse('Ctf类型' + request.POST.get('CtfCategoryName') + '创建成功！')
-#     except:
-#         return HttpResponse('Ctf类型' + request.POST.get('CtfCategoryName') + '创建失败！')
-#
-#
-# 向题库添加题目的函数
-#
-# def addQuestion(request):
-#     newQuestion = CtfQuestions()
-#     newQuestion.question_title = request.POST.get('CtfQuestionTitle')
-#     newQuestion.question_content = request.POST.get('CtfQuestionContent')
-#     newQuestion.question_type = request.POST.get('CtfQuestionType')
-#     newQuestion.question_answer = request.POST.get('CtfQuestionAnswer')
-#     newQuestion.question_tips = request.POST.get('CtfQuestionTips')
-#     newQuestion.question_fraction = request.POST.get('CtfQuestionFraction')
-#     newQuestion.question_ctf_category = request.POST.get('CtfQuestionCtfCategory')
-#     newQuestion.docker_path = request.POST.get('DockerPath')
-#     try:
-#         newQuestion.save()
-#         return HttpResponse('题目' + request.POST.get('CtfQuestionTitle') + '入库成功！')
-#     except:
-#         return HttpResponse('题目' + request.POST.get('CtfQuestionTitle') + '入库成功！')
+    return render(request, 'unticheating.html', {"cheating_history": chaeting_history})

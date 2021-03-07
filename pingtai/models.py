@@ -4,8 +4,8 @@ from django.db import models
 # Create your models here.
 
 class CtfCategory(models.Model):
-    category_id = models.AutoField(primary_key=True, verbose_name="类型编号",)
-    category_name = models.CharField(max_length=20, verbose_name="类型名称",)
+    category_id = models.AutoField(primary_key=True, verbose_name="类型编号", )
+    category_name = models.CharField(max_length=20, verbose_name="类型名称", )
 
     def __str__(self):
         return str(self.category_id)
@@ -16,10 +16,10 @@ class CtfCategory(models.Model):
 
 
 class ChooseQuestions(models.Model):
-    question_id = models.AutoField(primary_key=True, verbose_name="问题编号",)
-    question_content = models.TextField(verbose_name="问题内容",)
-    question_options = models.TextField(verbose_name="问题选项",)
-    question_answer = models.CharField(max_length=255, verbose_name="答案",)
+    question_id = models.AutoField(primary_key=True, verbose_name="问题编号", )
+    question_content = models.TextField(verbose_name="问题内容", )
+    question_options = models.TextField(verbose_name="问题选项", )
+    question_answer = models.CharField(max_length=255, verbose_name="答案", )
 
     def __str__(self):
         return str(self.question_id)
@@ -30,28 +30,30 @@ class ChooseQuestions(models.Model):
 
 
 class CtfQuestions(models.Model):
-    question_id = models.AutoField(primary_key=True, verbose_name="问题编号",)
-    question_title = models.CharField(max_length=255, verbose_name="问题标题",)
-    question_content = models.TextField(verbose_name="问题内容",)
-    question_tips = models.TextField(verbose_name="提示",)
-    question_answer = models.CharField(max_length=255, verbose_name="答案",)
-    question_fraction = models.CharField(max_length=255, verbose_name="分值",)
+    question_id = models.AutoField(primary_key=True, verbose_name="问题编号", )
+    question_title = models.CharField(max_length=255, verbose_name="问题标题", )
+    question_content = models.TextField(verbose_name="问题内容", )
+    question_tips = models.TextField(verbose_name="提示", )
+    question_answer = models.CharField(max_length=255, verbose_name="答案", )
+    question_fraction = models.CharField(max_length=255, verbose_name="分值", )
     question_type_choose = (('Choose', 'Choose'), ('SAQ', 'SAQ'), ('CTF', 'CTF'), ('AWD', 'AWD'))
-    question_type = models.CharField(max_length=6, choices=question_type_choose, verbose_name="问题类型",)
+    question_type = models.CharField(max_length=6, choices=question_type_choose, verbose_name="问题类型", )
     question_ctf_category_choose = [('', '------')]
     # 初次执行迁移时注释下面四行
     get_CtfCategory = CtfCategory.objects.all()
     for CtfCategory_item in get_CtfCategory:
         question_ctf_category_choose = question_ctf_category_choose + [
             (CtfCategory_item.category_name, CtfCategory_item.category_name)]
-    question_ctf_category = models.CharField(max_length=20, choices=question_ctf_category_choose, verbose_name="CTF 类型",)
+    question_ctf_category = models.CharField(max_length=20, choices=question_ctf_category_choose,
+                                             verbose_name="CTF 类型", )
     if_docker_choose = (('1', '是'), ('0', '否'))
-    if_docker = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否使用Docker",)
+    if_docker = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否使用Docker", )
     docker_type_choose = (('WebFile', 'WebFile'), ('FromDockerHub', 'FromDockerHub'))
-    docker_type = models.TextField(choices=docker_type_choose, blank=True, verbose_name="Docker源",)
-    docker_file = models.FileField(upload_to='./static/upload/upload_docker_file', max_length=100, blank=True, verbose_name="部署到Docker的文件",)
-    docker_Hub = models.CharField(max_length=200, blank=True, verbose_name="DockerHub地址",)
-    if_AntiCheating = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否启用反作弊",)
+    docker_type = models.TextField(choices=docker_type_choose, blank=True, verbose_name="Docker源", )
+    docker_file = models.FileField(upload_to='./static/upload/upload_docker_file', max_length=100, blank=True,
+                                   verbose_name="部署到Docker的文件", )
+    docker_Hub = models.CharField(max_length=200, blank=True, verbose_name="DockerHub地址", )
+    if_AntiCheating = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否启用反作弊", )
 
     def __str__(self):
         return self.question_title
@@ -127,13 +129,14 @@ class Achievement(models.Model):
 
 
 class Uphistory(models.Model):
-    id = models.AutoField(primary_key = True)
+    id = models.AutoField(primary_key=True)
     match_id = models.IntegerField()
+    match_title = models.TextField(default=None)
     user_id = models.IntegerField()
+    user_name = models.TextField(default=None)
     upload_flag = models.TextField()
     if_choose = (('1', '是'), ('0', '否'))
     if_cheating = models.CharField(max_length=1, choices=if_choose, blank=False, verbose_name="是否疑似作弊", )
-
 
     def __str__(self):
         return str(self.id) + str(self.match_id) + str(self.user_id)

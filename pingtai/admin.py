@@ -133,7 +133,7 @@ class AchievementAdmin(admin.ModelAdmin):
 admin.site.register(Achievement, AchievementAdmin)
 
 class UphistoryAdmin(admin.ModelAdmin):
-    list_display = ('match_id', 'user_id', 'upload_flag', 'if_cheating')
+    list_display = ('match_id', 'match_title', 'user_id', 'user_name', 'upload_flag', 'if_cheating')
     list_editable = ()
     readonly_fields = ('id',)
     search_fields = ('match_id', 'user_id')
