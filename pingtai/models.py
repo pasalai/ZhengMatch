@@ -11,8 +11,8 @@ class CtfCategory(models.Model):
         return str(self.category_id)
 
     class Meta:
-        verbose_name = "CTF类型"
-        verbose_name_plural = "CTF类型"
+        verbose_name = "CTF 类型管理"
+        verbose_name_plural = "CTF 类型管理"
 
 
 class ChooseQuestions(models.Model):
@@ -39,7 +39,7 @@ class CtfQuestions(models.Model):
     question_type_choose = (('Choose', 'Choose'), ('SAQ', 'SAQ'), ('CTF', 'CTF'), ('AWD', 'AWD'))
     question_type = models.CharField(max_length=6, choices=question_type_choose, verbose_name="问题类型",)
     question_ctf_category_choose = [('', '------')]
-    # 初次执行迁移时注释
+    # 初次执行迁移时注释下面四行
     get_CtfCategory = CtfCategory.objects.all()
     for CtfCategory_item in get_CtfCategory:
         question_ctf_category_choose = question_ctf_category_choose + [
@@ -49,7 +49,7 @@ class CtfQuestions(models.Model):
     if_docker = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否使用Docker",)
     docker_type_choose = (('WebFile', 'WebFile'), ('FromDockerHub', 'FromDockerHub'))
     docker_type = models.TextField(choices=docker_type_choose, blank=True, verbose_name="Docker源",)
-    docker_file = models.FileField(upload_to='./upload/upload_docker_file', max_length=100, blank=True, verbose_name="部署到Docker的文件",)
+    docker_file = models.FileField(upload_to='./static/upload/upload_docker_file', max_length=100, blank=True, verbose_name="部署到Docker的文件",)
     docker_Hub = models.CharField(max_length=200, blank=True, verbose_name="DockerHub地址",)
     if_AntiCheating = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否启用反作弊",)
 
@@ -57,8 +57,8 @@ class CtfQuestions(models.Model):
         return self.question_title
 
     class Meta:
-        verbose_name = 'CTF题库'
-        verbose_name_plural = 'CTF题库'
+        verbose_name = 'CTF 题库管理'
+        verbose_name_plural = 'CTF 题库管理'
 
 
 class MatchInfo(models.Model):
@@ -74,12 +74,13 @@ class MatchInfo(models.Model):
         return self.match_name
 
     class Meta:
-        verbose_name = "赛事信息"
-        verbose_name_plural = "赛事信息"
+        verbose_name = "赛事信息管理"
+        verbose_name_plural = "赛事信息管理"
 
 
 class Notice(models.Model):
     match_id_choose = [(0, '全局通知')]
+    # 第一次生成数据库时，先将下面四行注释掉
     get_MatchInfo = MatchInfo.objects.all()
     for MatchInfo_item in get_MatchInfo:
         match_id_choose = match_id_choose + [
@@ -93,21 +94,21 @@ class Notice(models.Model):
         return self.notice_content
 
     class Meta:
-        verbose_name = "公告"
-        verbose_name_plural = "公告"
+        verbose_name = "通知公告"
+        verbose_name_plural = "通知公告"
 
 
 class WriteUp(models.Model):
     user_id = models.CharField(max_length=255, default='')
     match_id = models.IntegerField()
-    writeup_file = models.FileField(upload_to='./upload/upload_WriteUp_file', max_length=255, default='')
+    writeup_file = models.FileField(upload_to='./static/upload/upload_WriteUp_file', max_length=255, default='')
 
     def __str__(self):
         return str(self.user_id) + str(self.match_id)
 
     class Meta:
-        verbose_name = "题解"
-        verbose_name_plural = "题解"
+        verbose_name = "选手解题解析（WriteUp）"
+        verbose_name_plural = "选手解题解析（WriteUp）"
 
 
 class Achievement(models.Model):
@@ -121,5 +122,22 @@ class Achievement(models.Model):
         return str(self.id) + str(self.match_id) + str(self.user_id)
 
     class Meta:
-        verbose_name = "成绩及答题"
-        verbose_name_plural = "成绩及答题"
+        verbose_name = "成绩及解答题目"
+        verbose_name_plural = "成绩及解答题目"
+
+
+class Uphistory(models.Model):
+    id = models.AutoField(primary_key = True)
+    match_id = models.IntegerField()
+    user_id = models.IntegerField()
+    upload_flag = models.TextField()
+    if_choose = (('1', '是'), ('0', '否'))
+    if_cheating = models.CharField(max_length=1, choices=if_choose, blank=False, verbose_name="是否疑似作弊", )
+
+
+    def __str__(self):
+        return str(self.id) + str(self.match_id) + str(self.user_id)
+
+    class Meta:
+        verbose_name = "选手答题记录及反作弊"
+        verbose_name_plural = "选手答题记录及反作弊"

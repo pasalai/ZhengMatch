@@ -166,19 +166,16 @@ def getuploadWriteUpFilePage(request):
 
 @login_required
 def uploadWritefile(request):
-    print("_"* 30)
     user = request.user
     matchID = request.POST.get('matchID')
-    file_name = request.POST.get('file')
-    print(file_name)
-    file_content = request.FILES.get('file')
-    print(file_content)
+    obj = request.FILES.get('file')
+    file_name = str(user.username) + "-" + str(matchID) + '.pdf'
+    obj.name = file_name
     writeup = WriteUp()
     writeup.match_id = matchID
     writeup.user_id = user.id
-    writeup.writeup_file = file_content
-    print(writeup)
-    # writeup.save()
+    writeup.writeup_file = obj
+    writeup.save()
     return HttpResponse('<script>alert("WriteUp上传成功")</script>')
 
 

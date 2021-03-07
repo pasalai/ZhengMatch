@@ -63,9 +63,9 @@
     2. import files
 -------------------------------------------------------------------*/
 
-@import url(../statics/css/animate.css);
-@import url(../statics/css/flaticon.css);
-@import url(../statics/css/font-awesome.min.css);
+@import url(../static/css/animate.css);
+@import url(../static/css/flaticon.css);
+@import url(../static/css/font-awesome.min.css);
 
 /*------------------------------------------------------------------
     3. basic
@@ -88,7 +88,7 @@ body {
 }
 
 body.demos .section {
-    background: url(../statics/images/bg.png) repeat top center #f2f3f5;
+    background: url(../static/images/bg.png) repeat top center #f2f3f5;
 }
 
 body.demos .section-title img {
@@ -831,7 +831,7 @@ span {
     box-shadow: 0 0 3px 0px rgba(0, 0, 0, 0.4);
     float: left;
     width: 100%;
-    background-image: url('../statics/images/layout_img/pattern_h.png');
+    background-image: url('../static/images/layout_img/pattern_h.png');
     position: fixed;
     height: 100%;
     overflow: auto;
@@ -1671,7 +1671,7 @@ a[data-toggle="collapse"] {
 -------------------------------------------------------------------*/
 
 .dash_head {
-    background-image: url('../statics/images/layout_img/pattern_h.png');
+    background-image: url('../static/images/layout_img/pattern_h.png');
     font-weight: normal;
     height: auto;
     border-radius: 5px 5px 0 0;
@@ -3277,7 +3277,7 @@ table.projects tr td:first-child {
 }
 
 .logo_login {
-    background: url('../statics/images/layout_img/login_image.jpg');
+    background: url('../static/images/layout_img/login_image.jpg');
     padding: 50px 0;
     background-position: center center;
     position: relative;
@@ -3401,7 +3401,7 @@ table.projects tr td:first-child {
 }
 
 .error_404 {
-    background: url('../statics/images/layout_img/pattern_h.png');
+    background: url('../static/images/layout_img/pattern_h.png');
     background-size: cover;
     background-color: #fff;
 }

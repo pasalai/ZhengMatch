@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo, Achievement
+from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo, Achievement, Uphistory
 
 admin.site.site_title = '崝赛'
 admin.site.site_header = '崝赛后台管理系统'
@@ -84,8 +84,8 @@ class ChooseQuestionsAdmin(admin.ModelAdmin):
         ('题目信息', {'fields': ('question_content', 'question_options', 'question_answer')}),
     )
 
-
-admin.site.register(ChooseQuestions, ChooseQuestionsAdmin)
+# 选择题暂时没做，做完后解除注释即可
+# admin.site.register(ChooseQuestions, ChooseQuestionsAdmin)
 
 
 class WriteUpAdmin(admin.ModelAdmin):
@@ -131,3 +131,17 @@ class AchievementAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Achievement, AchievementAdmin)
+
+class UphistoryAdmin(admin.ModelAdmin):
+    list_display = ('match_id', 'user_id', 'upload_flag', 'if_cheating')
+    list_editable = ()
+    readonly_fields = ('id',)
+    search_fields = ('match_id', 'user_id')
+    empty_value_display = 'N/A'
+    list_filter = ()
+    fieldsets = (
+        ('答题记录', {'fields': ('match_id', 'user_id', 'upload_flag', 'if_cheating')}),
+    )
+
+
+admin.site.register(Uphistory, UphistoryAdmin)
