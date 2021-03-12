@@ -1,16 +1,23 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.conf import settings
-from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement, Notice, WriteUp, Uphistory
+# from django.conf import settings
+from pingtai.models import CtfCategory, CtfQuestions, MatchInfo, Achievement, Notice, WriteUp, Uphistory, Dynamicflag
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
+import os
 import docker
 import tarfile
-import os
-
+import random
+import string
+import socket
+from hashlib import md5
 
 # Create your views here.
+
+# 全局变量
+port_list = [80, 3306, 8080]  # docker服务器预留及已占用的端口号
+
 
 @login_required
 def HelloWorld(request):
@@ -53,6 +60,8 @@ def getMatchPage(request):
                 questions_id = []
                 questions_title = []
                 questions_content = []
+                questions_docker = []
+                questions_docker_address = []
                 question_tips = []
                 question_fraction = []
                 question_ctf_category = []
@@ -61,22 +70,33 @@ def getMatchPage(request):
                     questions_id.append(questions_ti.question_id)
                     questions_title.append(questions_ti.question_title)
                     questions_content.append(questions_ti.question_content)
+                    questions_docker.append(questions_ti.if_docker)
+                    try:
+                        address = \
+                            Dynamicflag.objects.all().filter(user_id__exact=user.id).filter(
+                                question_id__exact=i).filter(
+                                match_id__exact=matchID)[0].container_address
+                        questions_docker_address.append(address)
+                    except:
+                        questions_docker_address.append(0)
                     question_tips.append(questions_ti.question_tips)
                     question_fraction.append(questions_ti.question_fraction)
                     question_ctf_category.append(questions_ti.question_ctf_category)
                 match_questions_info = zip(questions_id, questions_title, questions_content, question_tips,
+                                           questions_docker, questions_docker_address,
                                            question_fraction,
                                            question_ctf_category)
                 return render(request, "match.html",
                               {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user,
                                'chengji': chengji})
             else:
-                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛')</script>", content_type="text/html",
+                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛');history.go(-1);</script>",
+                                    content_type="text/html",
                                     status='403')
         else:
-            return HttpResponse(content='<script>alert("比赛已经结束")</script>', status='403')
+            return HttpResponse(content='<script>alert("比赛已经结束");history.go(-1);</script>', status='403')
     else:
-        return HttpResponse(content='<script>alert("比赛尚未开始")</script>', status='403')
+        return HttpResponse(content='<script>alert("比赛尚未开始");history.go(-1);</script>', status='403')
 
 
 @login_required
@@ -116,7 +136,7 @@ def pushFlag(request):
             count = Achievement.objects.all().filter(user_id__exact=request.user.id).filter(match_id=match_id)[0]
             answered_questions = count.answered_question_id.split('/')
             if question_id in answered_questions:
-                return HttpResponse('<script>alert("这个题已经做过了")</script>')
+                return HttpResponse('<script>alert("这个题已经做过了");history.go(-1);</script>')
             count.answered_question_id = count.answered_question_id + '/' + question_id
             fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
             count.achievement = count.achievement + int(fenshu)
@@ -129,41 +149,130 @@ def pushFlag(request):
             fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
             count.achievement = int(fenshu)
             count.save()
-        return HttpResponse(content='<script>alert("答案正确")</script>')
+        return HttpResponse(content='<script>alert("答案正确");history.go(-1);</script>')
     else:
-        return HttpResponse(content="<script>alert('flag错误')</script>")
+        return HttpResponse(content="<script>alert('flag错误');history.go(-1);</script>")
 
 
-@login_required
 class CreateDocker:
     def __init__(self):
-        self.port_list = []
+        while True:
+            self.random_port = random.randint(10000, 20000)
+            if self.random_port not in port_list:
+                print("本次将创建容器实例，映射到端口 ", self.random_port)
+                break
+        port_list.append(self.random_port)
 
     def create_docker(self):
-        self.client = docker.from_env()
-        container = self.client.containers.run('ubuntu', 'echo "HelloWorld!"', detach=True)
-        print(container.logs())
-        return container
-
-    def rm_docker(self, docker_name):
-        import os
-        os.popen("docker rm -f " + str(docker_name))
-        return 'OK'
+        client = docker.from_env()
+        container = client.containers.run(image='pasalai/xampp:v2',
+                                          command='/bin/sh -c "while true; do echo hello world; sleep 1; done"',
+                                          ports={'80': self.random_port}, detach=True)
+        self.container_id = container.id
+        return container.id, self.random_port
 
     # 复制题目文件到容器中
-    # copy_to('/local/foo.txt','my-container:/tmp/foo.txt')
     def copy_to(self, src, dst):
         name, dst = dst.split(':')
-        container = self.client.containers.get(name)
+        # 指定容器
+        client = docker.from_env()
+        container = client.containers.get(name)
+
+        print("======上传文件中...======")
         os.chdir(os.path.dirname(src))
-        srcname = os.path.basename(src)
+        self.srcname = os.path.basename(src)
         tar = tarfile.open(src + '.tar', mode='w')
         try:
-            tar.add(srcname)
+            tar.add(self.srcname)
         finally:
             tar.close()
         data = open(src + '.tar', 'rb').read()
         container.put_archive(os.path.dirname(dst), data)
+
+    def unzip(self):
+        client = docker.from_env()
+        container = client.containers.get(self.container_id)
+        # 解压文件
+        unzip_command = 'unzip /opt/lampp/htdocs/' + self.srcname + ' -d /opt/lampp/htdocs/'
+        print("======解压文件中...======")
+        container.exec_run('unzip /opt/lampp/htdocs/' + self.srcname + ' -d /opt/lampp/htdocs/')
+        # 启动xampp服务
+        print("======启动xampp服务中...======")
+        container.exec_run('/opt/lampp/lampp start')
+        # 导入数据库
+        print("======正在导入数据库...======")
+        # echo "/opt/lampp/bin/mysql -u root --password=\'password\' match_database < /opt/lampp/htdocs/sqlfile.sql" to /opt/lampp/import.sh',
+        # a = container.exec_run('sh /opt/lampp/htdocs/import.sh')
+        # print(b.output.decode('utf8'))
+        container.exec_run('sh /opt/lampp/htdocs/import.sh')
+        # 删除sql、sh部署文件
+        container.exec_run('rm /opt/lampp/htdocs/sqlfile.sql')
+        # 重启xampp服务
+        print("======重新启动xampp服务...======")
+        container.exec_run('/opt/lampp/lampp restart')
+
+    # 创建flag
+    def set_flag(self, container_id, username):
+        # 指定容器
+        # client = docker.from_env()
+        # container = client.containers.get(container_id)
+        # 生成flag内容
+        ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+        flag_value = 'flag{' + md5(ran_str.encode('utf8')).hexdigest() + '}'
+        print("====生成flag:", flag_value, '====')
+
+        # 尝试向docker 写入flag
+        father_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "..")
+        with open(father_path + '\\static\\flag\\flag.txt', mode='w') as fp:
+            fp.write(flag_value)
+            fp.close()
+        print('====写入动态flag至容器'+container_id+'...====')
+        self.copy_to(father_path + '\\static\\flag\\flag.txt', '%s:/opt/lampp/flag.txt' % container_id)
+        return flag_value
+
+
+@login_required
+def createDockerContainer(request):
+    matchID = request.POST.get('matchID')
+    matchName = MatchInfo.objects.filter(match_id__exact=matchID)[0].match_name
+    user = request.user
+    question_id = request.POST.get('questionID')
+    # 创建容器
+    dockerContainer = CreateDocker()
+    containerID, containerAddress = dockerContainer.create_docker()
+    hostname = socket.gethostname()
+    containerAddress = 'http://' + str(socket.gethostbyname(hostname)) + ":" + str(containerAddress)
+    print(containerAddress)
+    # 部署题目文件系统
+    questionFilePath = CtfQuestions.objects.filter(question_id__exact=question_id)[0].docker_file.path
+    print(questionFilePath)
+    filename = questionFilePath.split('/')[:-1]
+    print(filename)
+    dockerContainer.copy_to(questionFilePath, '%s:/opt/lampp/htdocs/%s' % (containerID, filename))
+    dockerContainer.unzip()
+    # 生成动态flag
+    flag = dockerContainer.set_flag(container_id=containerID, username=user.username)
+
+    # 是否已经存在记录
+    if len(Dynamicflag.objects.all().filter(match_id__exact=matchID).filter(user_id__exact=user.id)) == 0:
+        # 写入记录
+        sqlItem = Dynamicflag()
+        sqlItem.match_id = matchID
+        sqlItem.match_name = matchName
+        sqlItem.user_id = user.id
+        sqlItem.user_name = user.username
+        sqlItem.question_id = question_id
+        sqlItem.container_id = containerID
+        sqlItem.container_address = containerAddress
+        sqlItem.flag = flag
+        sqlItem.save()
+    else:
+        sqlItem = Dynamicflag.objects.all().filter(match_id__exact=matchID).filter(user_id__exact=user.id)[0]
+        sqlItem.container_id = containerID
+        sqlItem.container_address = containerAddress
+        sqlItem.flag = flag
+        sqlItem.save()
+    return HttpResponse('<script>alert("题目环境启动成功,解题地址为%s");history.go(-1);</script>' % containerAddress)
 
 
 @login_required
@@ -202,7 +311,7 @@ def uploadWritefile(request):
     writeup.user_id = user.id
     writeup.writeup_file = obj
     writeup.save()
-    return HttpResponse('<script>alert("WriteUp上传成功")</script>')
+    return HttpResponse('<script>alert("WriteUp上传成功");history.go(-2);</script>')
 
 
 # 反作弊烽火台

@@ -50,10 +50,11 @@ class CtfQuestions(models.Model):
     if_docker = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否使用Docker", )
     docker_type_choose = (('WebFile', 'WebFile'), ('FromDockerHub', 'FromDockerHub'))
     docker_type = models.TextField(choices=docker_type_choose, blank=True, verbose_name="Docker源", )
-    docker_file = models.FileField(upload_to='./static/upload/upload_docker_file', max_length=100, blank=True,
+    docker_file = models.FileField(upload_to='static/upload/upload_docker_file', max_length=100, blank=True,
                                    verbose_name="部署到Docker的文件", )
     docker_Hub = models.CharField(max_length=200, blank=True, verbose_name="DockerHub地址", )
-    if_AntiCheating = models.CharField(max_length=1, choices=if_docker_choose, blank=False, verbose_name="是否启用反作弊", )
+    if_AntiCheating = models.CharField(max_length=1, choices=if_docker_choose, blank=False,
+                                       verbose_name="是否启用动态flag及反作弊", )
 
     def __str__(self):
         return self.question_title
@@ -64,13 +65,13 @@ class CtfQuestions(models.Model):
 
 
 class MatchInfo(models.Model):
-    match_id = models.AutoField(primary_key=True)
-    match_name = models.CharField(max_length=40, default='新建比赛')
-    match_content = models.CharField(max_length=50, default='暂无简介')
-    match_start_time = models.DateTimeField()
-    match_stop_time = models.DateTimeField()
-    match_user = models.TextField()
-    match_questions = models.TextField()
+    match_id = models.AutoField(primary_key=True, verbose_name="竞赛ID", )
+    match_name = models.CharField(max_length=40, default='新建比赛', verbose_name="竞赛名称", )
+    match_content = models.CharField(max_length=50, default='暂无简介', verbose_name="竞赛简介", )
+    match_start_time = models.DateTimeField(verbose_name="竞赛开始时间", )
+    match_stop_time = models.DateTimeField(verbose_name="竞赛结束时间", )
+    match_user = models.TextField(verbose_name="参赛选手", )
+    match_questions = models.TextField(verbose_name="竞赛题目", )
 
     def __str__(self):
         return self.match_name
@@ -103,7 +104,7 @@ class Notice(models.Model):
 class WriteUp(models.Model):
     user_id = models.CharField(max_length=255, default='')
     match_id = models.IntegerField()
-    writeup_file = models.FileField(upload_to='./static/upload/upload_WriteUp_file', max_length=255, default='')
+    writeup_file = models.FileField(upload_to='static/upload/upload_WriteUp_file', max_length=255, default='')
 
     def __str__(self):
         return str(self.user_id) + str(self.match_id)
@@ -144,3 +145,22 @@ class Uphistory(models.Model):
     class Meta:
         verbose_name = "选手答题记录及反作弊"
         verbose_name_plural = "选手答题记录及反作弊"
+
+
+class Dynamicflag(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name='ID')
+    match_id = models.IntegerField(verbose_name='比赛ID')
+    match_name = models.TextField(default=None, blank=True,verbose_name='比赛名称')
+    user_id = models.IntegerField(verbose_name='用户ID')
+    user_name = models.TextField(default=None, blank=True,verbose_name='用户名')
+    question_id = models.IntegerField(verbose_name='题目ID')
+    container_id = models.TextField(default=None, blank=True, verbose_name='容器ID')
+    container_address = models.TextField(default=None, blank=True, verbose_name='容器地址/端口')
+    flag = models.TextField(default='', blank=True, verbose_name='动态Flag')
+
+    def __str__(self):
+        return str(self.id) + str(self.match_id) + str(self.user_id)
+
+    class Meta:
+        verbose_name = "动态Flag管理"
+        verbose_name_plural = "动态Flag管理"

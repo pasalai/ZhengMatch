@@ -28,6 +28,7 @@ urlpatterns = [
     path('getuploadWriteUpFilePage/', pingtai.views.getuploadWriteUpFilePage),   # 提交WriteUp页面
     path('uploadwp/', pingtai.views.uploadWritefile),    # 接受上传的WP
     path('anticheating/', pingtai.views.getAntiCheatingPage),    # 烽火台
+    path('createDockerContainer/', pingtai.views.createDockerContainer),   # 创建Docker容器实例
 
 
     # 修改密码

@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo, Achievement, Uphistory
+from .models import CtfQuestions, CtfCategory, ChooseQuestions, WriteUp, Notice, MatchInfo, Achievement, Uphistory, \
+    Dynamicflag
 
 admin.site.site_title = '崝赛'
 admin.site.site_header = '崝赛后台管理系统'
@@ -84,6 +85,7 @@ class ChooseQuestionsAdmin(admin.ModelAdmin):
         ('题目信息', {'fields': ('question_content', 'question_options', 'question_answer')}),
     )
 
+
 # 选择题暂时没做，做完后解除注释即可
 # admin.site.register(ChooseQuestions, ChooseQuestionsAdmin)
 
@@ -132,6 +134,7 @@ class AchievementAdmin(admin.ModelAdmin):
 
 admin.site.register(Achievement, AchievementAdmin)
 
+
 class UphistoryAdmin(admin.ModelAdmin):
     list_display = ('match_id', 'match_title', 'user_id', 'user_name', 'upload_flag', 'if_cheating')
     list_editable = ()
@@ -145,3 +148,23 @@ class UphistoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Uphistory, UphistoryAdmin)
+
+
+class DynamicflagAdmin(admin.ModelAdmin):
+    list_display = (
+        'match_id', 'match_name', 'user_id', 'user_name', 'question_id', 'container_id', 'container_address', 'flag')
+    list_editable = ()
+    readonly_fields = ('id',)
+    search_fields = (
+        'match_id', 'match_name', 'user_id', 'user_name', 'question_id', 'container_id', 'container_address', 'flag')
+    empty_value_display = 'N/A'
+    list_filter = ()
+    fieldsets = (('动态flag及容器管理',
+                  {'fields': (
+                      'match_id', 'match_name', 'user_id', 'user_name', 'question_id', 'container_id',
+                      'container_address',
+                      'flag')
+                  }),)
+
+
+admin.site.register(Dynamicflag, DynamicflagAdmin)
