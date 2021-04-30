@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'simpleui',
+    'registration',
     'pingtai.apps.PingtaiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -81,8 +82,8 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'NAME': 'zhengmatch',
-        'USER': 'zhengmatch',
-        'PASSWORD': 'zhengmatch',
+        'USER': 'root',
+        'PASSWORD': 'root',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
@@ -129,9 +130,32 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
 
+# SimpleUI 自定义模块不显示
 SIMPLEUI_DEFAULT_ICON = False
-
 SIMPLEUI_HOME_INFO = False
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+# django.registration
+REGISTRATION_EMAIL_SUBJECT_PREFIX = '[Django Registration Test App]'
+SEND_ACTIVATION_EMAIL = True
+REGISTRATION_AUTO_LOGIN = False
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+DEFAULT_FROM_EMAIL = 'nsita@sdyu.edu.cn'
+EMAIL_HOST_PASSWORD = 'sdyu*123'
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL
+'''
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_TIMEOUT = None
+'''
+# Host for sending email.
+EMAIL_HOST = 'smtp.sdyu.edu.cn'
+# Port for sending email.
+EMAIL_PORT = 25
+REGISTRATION_OPEN = True    # 设为 True，允许用户注册
+ACCOUNT_ACTIVATION_DAYS = 7 # 留一周的激活时间；当然，也可以设为其他值
+LOGIN_REDIRECT_URL = '/'    # 登录后呈现给用户的页面
+SIMPLE_BACKEND_REDIRECT_URL = '/login/?next=/'

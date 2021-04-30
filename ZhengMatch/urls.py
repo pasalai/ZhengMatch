@@ -21,12 +21,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
 from django.views.generic import CreateView
 from pingtai import urls
+import registration
 
 
 urlpatterns = [
     path('', include('pingtai.urls')),
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(template_name='login.html'), name="user_login"),
+
+    path('accounts/', include('registration.backends.default.urls')),
     # path('create/', CreateView.as_view(template_name='registration.html', model='UserWarning', form_class='SignUpForm', success_url=reverse_lazy('')), name="user_create"),
     path('logout/', LogoutView.as_view(template_name='logout.html', redirect_field_name='/login'), name="user_logout"),
 ]

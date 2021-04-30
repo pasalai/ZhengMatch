@@ -11,6 +11,7 @@ import tarfile
 import random
 import string
 import socket
+import shutil
 from hashlib import md5
 
 # Create your views here.
@@ -48,15 +49,15 @@ def getMatchPage(request):
         chengji = Achievement.objects.all().filter(user_id=user.id).filter(match_id=matchID)[0].achievement
     except:
         chengji = 0
-    match_user = MatchInfo.objects.all().filter(match_id=matchID)[0].match_user.split('/')
+    match_user = MatchInfo.objects.all().filter(match_id=matchID)[0].match_user
     match_start_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_start_time.replace(tzinfo=None)
     match_stop_time = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_stop_time.replace(tzinfo=None)
     cur_time = datetime.now()
     if match_start_time <= cur_time:
         if match_stop_time > cur_time:
-            if str(user) in match_user:
+            if str(user.id) in match_user:
                 match_infos = MatchInfo.objects.all().filter(match_id__exact=matchID)[0]
-                match_questions = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_questions.split('/')
+                match_questions = MatchInfo.objects.all().filter(match_id__exact=matchID)[0].match_questions
                 questions_id = []
                 questions_title = []
                 questions_content = []
@@ -90,8 +91,7 @@ def getMatchPage(request):
                               {'match_infos': match_infos, 'match_questions_info': match_questions_info, 'user': user,
                                'chengji': chengji})
             else:
-                return HttpResponse(content="<script>alert('当前用户尚未报名本比赛');history.go(-1);</script>",
-                                    content_type="text/html",
+                return HttpResponse(content="<script>alert('您未参加该比赛，请与管理员联系');history.go(-1);</script>",
                                     status='403')
         else:
             return HttpResponse(content='<script>alert("比赛已经结束");history.go(-1);</script>', status='403')
@@ -128,15 +128,29 @@ def pushFlag(request):
         up_flag.if_cheating = "0"
     up_flag.save()
     # print(question_id, flag)
-    question_answer = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0]
+    # 判断是否作弊
+    if_anticheating = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].if_AntiCheating
+
+    if if_anticheating == "1":
+        try:
+            question_answer = \
+                Dynamicflag.objects.all().filter(question_id__exact=question_id).filter(
+                    user_id__exact=request.user.id).filter(
+                    match_id__exact=match_id)[0].flag
+            if question_answer == '':
+                return HttpResponse('<script>alert("请先启动容器");location.replace(document.referrer);</script>')
+        except:
+            return HttpResponse('<script>alert("请先启动容器");location.replace(document.referrer);</script>')
+    else:
+        question_answer = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_answer
     # print(question_answer)
-    if flag == question_answer.question_answer:
+    if flag == question_answer:
         # 尝试读取选手在本次比赛的解题成绩
         try:
             count = Achievement.objects.all().filter(user_id__exact=request.user.id).filter(match_id=match_id)[0]
             answered_questions = count.answered_question_id.split('/')
             if question_id in answered_questions:
-                return HttpResponse('<script>alert("这个题已经做过了");history.go(-1);</script>')
+                return HttpResponse('<script>alert("这个题已经做过了");location.replace(document.referrer);</script>')
             count.answered_question_id = count.answered_question_id + '/' + question_id
             fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
             count.achievement = count.achievement + int(fenshu)
@@ -149,9 +163,9 @@ def pushFlag(request):
             fenshu = CtfQuestions.objects.all().filter(question_id__exact=question_id)[0].question_fraction
             count.achievement = int(fenshu)
             count.save()
-        return HttpResponse(content='<script>alert("答案正确");history.go(-1);</script>')
+        return HttpResponse(content='<script>alert("答案正确");location.replace(document.referrer);</script>')
     else:
-        return HttpResponse(content="<script>alert('flag错误');history.go(-1);</script>")
+        return HttpResponse(content="<script>alert('flag错误');location.replace(document.referrer);</script>")
 
 
 class CreateDocker:
@@ -163,9 +177,18 @@ class CreateDocker:
                 break
         port_list.append(self.random_port)
 
-    def create_docker(self):
+    def create_docker_by_file(self):
         client = docker.from_env()
         container = client.containers.run(image='pasalai/xampp:v2',
+                                          command='/bin/sh -c "while true; do echo hello world; sleep 1; done"',
+                                          ports={'80': self.random_port}, detach=True)
+        self.container_id = container.id
+        return container.id, self.random_port
+
+    def creat_docker_by_dockerhub(self, dockerHub):
+        client = docker.from_env()
+        getimage = client.images.pull(dockerHub)
+        container = client.containers.run(image=dockerHub,
                                           command='/bin/sh -c "while true; do echo hello world; sleep 1; done"',
                                           ports={'80': self.random_port}, detach=True)
         self.container_id = container.id
@@ -226,7 +249,7 @@ class CreateDocker:
         with open(father_path + '\\static\\flag\\flag.txt', mode='w') as fp:
             fp.write(flag_value)
             fp.close()
-        print('====写入动态flag至容器'+container_id+'...====')
+        print('====写入动态flag至容器' + container_id + '...====')
         self.copy_to(father_path + '\\static\\flag\\flag.txt', '%s:/opt/lampp/flag.txt' % container_id)
         return flag_value
 
@@ -239,20 +262,39 @@ def createDockerContainer(request):
     question_id = request.POST.get('questionID')
     # 创建容器
     dockerContainer = CreateDocker()
-    containerID, containerAddress = dockerContainer.create_docker()
-    hostname = socket.gethostname()
-    containerAddress = 'http://' + str(socket.gethostbyname(hostname)) + ":" + str(containerAddress)
-    print(containerAddress)
-    # 部署题目文件系统
-    questionFilePath = CtfQuestions.objects.filter(question_id__exact=question_id)[0].docker_file.path
-    print(questionFilePath)
-    filename = questionFilePath.split('/')[:-1]
-    print(filename)
-    dockerContainer.copy_to(questionFilePath, '%s:/opt/lampp/htdocs/%s' % (containerID, filename))
-    dockerContainer.unzip()
-    # 生成动态flag
-    flag = dockerContainer.set_flag(container_id=containerID, username=user.username)
 
+    # 判断部署方式
+    dockerType = CtfQuestions.objects.filter(question_id__exact=question_id)[0].docker_type
+    # 使用WebFile方式部署
+    if dockerType == 'WebFile':
+        containerID, containerPort = dockerContainer.create_docker_by_file()
+        hostname = socket.gethostname()
+        containerAddress = 'http://' + str(socket.gethostbyname(hostname)) + ":" + str(containerPort)
+        print(containerAddress)
+        # 部署题目文件系统
+        questionFilePath = CtfQuestions.objects.filter(question_id__exact=question_id)[0].docker_file.path
+        print(questionFilePath)
+        filename = questionFilePath.split('/')[:-1]
+        print(filename)
+        dockerContainer.copy_to(questionFilePath, '%s:/opt/lampp/htdocs/%s' % (containerID, filename))
+        dockerContainer.unzip()
+        # 生成动态flag
+        flag = dockerContainer.set_flag(container_id=containerID, username=user.username)
+    # 使用dockerHub方式部署
+    elif dockerType == 'FromDockerHub':
+        dockerHub = CtfQuestions.objects.filter(question_id__exact=question_id).docker_Hub
+        containerID, containerPort = dockerContainer.creat_docker_by_dockerhub(dockerHub=dockerHub)
+        hostname = socket.gethostname()
+        containerAddress = 'http://' + str(socket.gethostbyname(hostname)) + ":" + str(containerPort)
+        print(containerAddress)
+        if_anticheating = CtfQuestions.objects.filter(question_id__exact=question_id).if_AntiCheating
+        if if_anticheating == '0':
+            flag = None
+        else:
+            flag = dockerContainer.set_flag(container_id=containerID, username=user.username)
+    else:
+        return HttpResponse(
+            '<script>alert("Error!Heacker!Go out, Please!");location.replace(document.referrer);</script>')
     # 是否已经存在记录
     if len(Dynamicflag.objects.all().filter(match_id__exact=matchID).filter(user_id__exact=user.id)) == 0:
         # 写入记录
@@ -272,7 +314,8 @@ def createDockerContainer(request):
         sqlItem.container_address = containerAddress
         sqlItem.flag = flag
         sqlItem.save()
-    return HttpResponse('<script>alert("题目环境启动成功,解题地址为%s");history.go(-1);</script>' % containerAddress)
+    return HttpResponse(
+        '<script>alert("题目环境启动成功,地址为%s");location.replace(document.referrer);;</script>' % containerAddress)
 
 
 @login_required
@@ -311,12 +354,29 @@ def uploadWritefile(request):
     writeup.user_id = user.id
     writeup.writeup_file = obj
     writeup.save()
-    return HttpResponse('<script>alert("WriteUp上传成功");history.go(-2);</script>')
+    father_path = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "..")
+    shutil.copy(father_path + '\\static\\static\\upload\\upload_WriteUp_file\\%s' % file_name,
+                father_path + '\\static\\upload\\upload_WriteUp_file\\%s' % file_name)
+    return HttpResponse('<script>alert("WriteUp上传成功");location.replace(document.referrer);</script>')
 
 
 # 反作弊烽火台
 @login_required
 def getAntiCheatingPage(request):
     chaeting_history = Uphistory.objects.all().filter(if_cheating__exact="1")
-
     return render(request, 'unticheating.html', {"cheating_history": chaeting_history})
+
+
+@login_required
+def Rank(request):
+    match_id = request.GET.get('matchid')
+    rank_info = Achievement.objects.all().filter(match_id__exact=match_id).order_by('achievement')
+    return render(request, 'unticheating.html', {'rank_info': rank_info, })
+
+
+@login_required
+def getUserInfo(request, user_id):
+    user_id = request.user.id
+    user_name = request.user.username
+    chengji_item = Achievement.objects.all().filter(user_id__exact=user_id)
+    return render(request, 'user.html', {"user_id": user_id, "user_name": user_name, "chengji_item": chengji_item,})

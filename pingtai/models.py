@@ -1,5 +1,6 @@
 from django.db import models
-
+from multiselectfield import MultiSelectField
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -70,8 +71,24 @@ class MatchInfo(models.Model):
     match_content = models.CharField(max_length=50, default='暂无简介', verbose_name="竞赛简介", )
     match_start_time = models.DateTimeField(verbose_name="竞赛开始时间", )
     match_stop_time = models.DateTimeField(verbose_name="竞赛结束时间", )
-    match_user = models.TextField(verbose_name="参赛选手", )
-    match_questions = models.TextField(verbose_name="竞赛题目", )
+
+    # 参赛选手多选
+    user_choose_item = []
+    user_list = User.objects.all()
+    for item in user_list:
+        user_choose_item = user_choose_item + [(item.id, item.username)]
+    print(user_choose_item)
+    # match_user = models.TextField(max_length=999, verbose_name="参赛选手", )
+    match_user = MultiSelectField(u"参赛选手", choices=user_choose_item, null=False, blank=False, max_length=999, )
+
+    # 题目多选
+    questions_choose_item = []
+    questions_list = CtfQuestions.objects.all()
+    for item in questions_list:
+        questions_choose_item = questions_choose_item + [(item.question_id, item.question_title)]
+    print(questions_choose_item)
+    # match_questions = models.TextField(max_length=999, verbose_name="竞赛题目",)
+    match_questions = MultiSelectField(u"竞赛题目", choices=questions_choose_item, null=False, blank=False, max_length=999, )
 
     def __str__(self):
         return self.match_name

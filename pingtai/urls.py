@@ -29,11 +29,10 @@ urlpatterns = [
     path('uploadwp/', pingtai.views.uploadWritefile),    # 接受上传的WP
     path('anticheating/', pingtai.views.getAntiCheatingPage),    # 烽火台
     path('createDockerContainer/', pingtai.views.createDockerContainer),   # 创建Docker容器实例
+    path('user/<int:user_id>', pingtai.views.getUserInfo),   # 用户中心
 
 
     # 修改密码
     path('password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('password_change_done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
-
-    # path('addctfcategory/', pingtai.views.addCtfCategory),
 ]
