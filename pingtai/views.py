@@ -250,7 +250,8 @@ class CreateDocker:
             fp.write(flag_value)
             fp.close()
         print('====写入动态flag至容器' + container_id + '...====')
-        self.copy_to(father_path + '\\static\\flag\\flag.txt', '%s:/opt/lampp/flag.txt' % container_id)
+        # 将flag写入根目录下flag.txt文件中
+        self.copy_to(father_path + '\\static\\flag\\flag.txt', '%s:/flag.txt' % container_id)
         return flag_value
 
 
@@ -282,12 +283,12 @@ def createDockerContainer(request):
         flag = dockerContainer.set_flag(container_id=containerID, username=user.username)
     # 使用dockerHub方式部署
     elif dockerType == 'FromDockerHub':
-        dockerHub = CtfQuestions.objects.filter(question_id__exact=question_id).docker_Hub
+        dockerHub = CtfQuestions.objects.filter(question_id__exact=question_id)[0].docker_Hub
         containerID, containerPort = dockerContainer.creat_docker_by_dockerhub(dockerHub=dockerHub)
         hostname = socket.gethostname()
         containerAddress = 'http://' + str(socket.gethostbyname(hostname)) + ":" + str(containerPort)
         print(containerAddress)
-        if_anticheating = CtfQuestions.objects.filter(question_id__exact=question_id).if_AntiCheating
+        if_anticheating = CtfQuestions.objects.filter(question_id__exact=question_id)[0].if_AntiCheating
         if if_anticheating == '0':
             flag = None
         else:
