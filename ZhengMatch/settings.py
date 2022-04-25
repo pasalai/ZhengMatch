@@ -141,8 +141,8 @@ REGISTRATION_EMAIL_SUBJECT_PREFIX = '[Django Registration Test App]'
 SEND_ACTIVATION_EMAIL = True
 REGISTRATION_AUTO_LOGIN = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = 'nsita@sdyu.edu.cn'
-EMAIL_HOST_PASSWORD = 'sdyu*123'
+DEFAULT_FROM_EMAIL = '你的邮箱地址'
+EMAIL_HOST_PASSWORD = '你的邮箱密码'
 EMAIL_HOST_USER = DEFAULT_FROM_EMAIL
 '''
 EMAIL_USE_TLS = True
